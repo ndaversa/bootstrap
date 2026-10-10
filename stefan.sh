@@ -34,8 +34,9 @@ mkdir -p "$ext_dir"
 [ -f "$ext_dir/fcoeoabgfenejglbffodgkkbkcdhcgfn.json" ] ||
   printf '{ "external_update_url": "https://clients2.google.com/service/update2/crx" }\n' > "$ext_dir/fcoeoabgfenejglbffodgkkbkcdhcgfn.json"
 # Every sign-in below opens in Chrome, so being signed in there first makes each one a click.
-export GH_BROWSER="open -a 'Google Chrome'"
-open -a "Google Chrome" https://claude.ai https://github.com/login https://dognzb.cr
+export GH_BROWSER="open -a '/Applications/Google Chrome.app'"
+# By path: a Chrome installed a moment ago is not yet known to macOS by name.
+open -a "/Applications/Google Chrome.app" https://claude.ai https://github.com/login https://dognzb.cr || true
 todo "In Chrome, sign in on the three tabs that just opened: Claude, GitHub and DOGnzb (skip any you're already signed in to).
   Then open Chrome's ⋮ menu (top right), click 'New extension added (Claude)', then Enable extension.
   (Not there? Quit Chrome with ⌘Q, open it again and look once more.) Press Return when done."
