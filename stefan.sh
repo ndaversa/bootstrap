@@ -17,7 +17,7 @@ say "Hi Stefan! This sets up your Mac. It takes 10-20 minutes."
 printf '  When it asks for a password, type your Mac login password and press Return.\n'
 printf '  Nothing shows while you type it; that is normal.\n'
 
-say "1/5 Homebrew (the standard way to install Mac tools; also installs Apple's developer tools)"
+say "1/6 Homebrew (the standard way to install Mac tools; also installs Apple's developer tools)"
 if [ ! -x /opt/homebrew/bin/brew ]; then
   printf '  It will ask for your password, then to press Return.\n'
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" </dev/tty
@@ -26,9 +26,24 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 command -v gh      >/dev/null 2>&1 || brew install --quiet gh
 command -v chezmoi >/dev/null 2>&1 || brew install --quiet chezmoi
 
-say "2/5 Sign in to GitHub (where your setup is stored)"
+say "2/6 Google Chrome and your sign-ins"
+[ -d "/Applications/Google Chrome.app" ] || brew install --cask --quiet google-chrome
+# Offers the Claude extension (Chrome asks once before turning it on; see run_after_50-apps.sh).
+ext_dir="$HOME/Library/Application Support/Google/Chrome/External Extensions"
+mkdir -p "$ext_dir"
+[ -f "$ext_dir/fcoeoabgfenejglbffodgkkbkcdhcgfn.json" ] ||
+  printf '{ "external_update_url": "https://clients2.google.com/service/update2/crx" }\n' > "$ext_dir/fcoeoabgfenejglbffodgkkbkcdhcgfn.json"
+# Every sign-in below opens in Chrome, so being signed in there first makes each one a click.
+export GH_BROWSER="open -a 'Google Chrome'"
+open -a "Google Chrome" https://claude.ai https://github.com/login https://dognzb.cr
+todo "In Chrome, sign in on the three tabs that just opened: Claude, GitHub and DOGnzb (skip any you're already signed in to).
+  Then open Chrome's ⋮ menu (top right), click 'New extension added (Claude)', then Enable extension.
+  (Not there? Quit Chrome with ⌘Q, open it again and look once more.) Press Return when done."
+read -r _ </dev/tty
+
+say "3/6 Sign in to GitHub (where your setup is stored)"
 if ! gh auth status >/dev/null 2>&1; then
-  printf '  Press Return to open GitHub in your browser, then paste the code (it is already copied).\n'
+  printf '  Press Return twice to open GitHub in Chrome, then paste the code there (it is already copied).\n'
   gh auth login --hostname github.com --git-protocol https --web --skip-ssh-key --clipboard </dev/tty
 fi
 gh auth setup-git --hostname github.com
@@ -45,13 +60,13 @@ until have_access; do
   read -r _ </dev/tty
 done
 
-say "3/5 Claude Code"
+say "4/6 Claude Code"
 [ -x "$HOME/.local/bin/claude" ] || curl -fsSL https://claude.ai/install.sh | bash
 if [ ! -x "$HOME/.local/bin/claude" ]; then
   todo "Claude Code didn't install (internet hiccup?). Paste the same line into Terminal again."; exit 1
 fi
 
-say "4/5 Your setup (Terminal settings, Node, the media assistant, phone access, daily updates)"
+say "5/6 Your setup (Terminal settings, Node, the media assistant, phone access, daily updates)"
 [ -e "$src" ] && [ ! -d "$src/.git" ] && mv "$src" "$src.incomplete-$(date +%s)"  # an interrupted clone
 if [ -d "$src/.git" ]; then
   git -C "$src" pull --ff-only --quiet || true
@@ -69,8 +84,8 @@ if ! chezmoi init --source "$src" --apply --force; then
   todo "A few parts didn't finish (see above). That's OK: Claude will sort them out next."
 fi
 
-say "5/5 Done with the installing. Now Claude takes over."
-printf '  Your browser opens once to sign in to Claude. Then Claude finishes the setup with you\n'
+say "6/6 Done with the installing. Now Claude takes over."
+printf '  Chrome opens once to sign in to Claude. Then Claude finishes the setup with you\n'
 printf '  and tells you the few things only you can do. You can stop any time and come back:\n'
 printf '  open Terminal, type  setup  and press Return.\n'
 # A fresh login shell loads the new Terminal settings (Homebrew, Node, the media/setup shortcuts),
