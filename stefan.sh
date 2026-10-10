@@ -73,6 +73,7 @@ say "5/5 Done with the installing. Now Claude takes over."
 printf '  Your browser opens once to sign in to Claude. Then Claude finishes the setup with you\n'
 printf '  and tells you the few things only you can do. You can stop any time and come back:\n'
 printf '  open Terminal, type  setup  and press Return.\n'
-cd "$src"
+# A fresh login shell loads the new Terminal settings (Homebrew, Node, the media/setup shortcuts),
+# which the window this ran in has not; he stays in it once Claude exits.
 # Not </dev/tty: Claude cannot watch /dev/tty itself (kqueue EINVAL); stdin already is the terminal.
-exec "$HOME/.local/bin/claude" "get me set up"
+exec /bin/zsh -lic 'cd ~/dev/chez-stefan && claude "get me set up"; exec /bin/zsh -l'
